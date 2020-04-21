@@ -218,8 +218,11 @@ async fn logout(
     HttpResponse::Unauthorized().finish()
 }
 
+/// This host is the address, where user would be redirected after initial authorization.
+/// For DEV environment with WebPack this is usually something like `http://localhost:9000`.
+/// We are using `http://localhost:8080` in all-in-one example.
 fn host(path: &str) -> String {
-    "http://localhost:8080".to_string() + path
+    env::var("REDIRECT_URL").unwrap_or("http://localhost:8080".to_string()) + path
 }
 
 #[actix_rt::main]
