@@ -11,7 +11,7 @@ actix-rt = '1.1'
 exitfailure = "0.5"
 uuid = { version = "0.8", features = [ "v4" ] }
 url = "2.1"
-openid = "0.3"
+openid = { version = "0.7", features = [ "microsoft" ] }
 
 [dependencies.serde]
 version = '1.0'
