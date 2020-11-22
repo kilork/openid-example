@@ -4,14 +4,17 @@ version = '0.1.0'
 authors = ['Alexander Korolev <kilork@yandex.ru>']
 edition = '2018'
 
+[features]
+default = []
+microsoft = ['openid/microsoft']
+
 [dependencies]
 actix = '0.9'
 actix-identity = '0.2'
 actix-rt = '1.1'
-exitfailure = "0.5"
-uuid = { version = "0.8", features = [ "v4" ] }
-url = "2.1"
-openid = { version = "0.7", features = [ "microsoft" ] }
+exitfailure = '0.5'
+uuid = { version = '0.8', features = [ 'v4' ] }
+url = '2.1'
 
 [dependencies.serde]
 version = '1.0'
@@ -24,3 +27,7 @@ features = ['json']
 [dependencies.actix-web]
 version = '2.0'
 features = ['rustls']
+
+[dependencies.openid]
+version = '0.7'
+default-features = false

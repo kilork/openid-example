@@ -35,7 +35,7 @@ async fn account(user: User) -> impl Responder {
 
 async fn request_token(
     oidc_client: web::Data<DiscoveredClient>,
-    query: web::Query<LoginQuery>,
+    query: &web::Query<LoginQuery>,
 ) -> Result<Option<(Token, Userinfo)>, ExitFailure> {
     let mut token: Token = oidc_client.request_token(&query.code).await?.into();
     if let Some(mut id_token) = token.id_token.as_mut() {
@@ -51,27 +51,22 @@ async fn request_token(
     Ok(Some((token, userinfo)))
 }
 
-#[get("/login/oauth2/code/oidc")]
-async fn login(
-    oidc_client: web::Data<DiscoveredClient>,
-    mut query: web::Query<LoginQuery>,
+pub async fn check_request_token(
+    state: &Option<String>,
     sessions: web::Data<RwLock<Sessions>>,
     identity: Identity,
+    request_token: Result<Option<(Token, Userinfo)>, ExitFailure>,
 ) -> impl Responder {
-    eprintln!("login: {:?}", query);
-
-    let redirect_url = query.state.take().unwrap_or_else(|| host("/"));
-
-    match request_token(oidc_client, query).await {
+    match request_token {
         Ok(Some((token, userinfo))) => {
             let id = uuid::Uuid::new_v4().to_string();
 
-            let login = userinfo.preferred_username.clone();
+            let login_ = userinfo.preferred_username.clone();
             let email = userinfo.email.clone();
 
             let user = User {
                 id: userinfo.sub.clone().unwrap_or_default(),
-                login,
+                login: login_,
                 last_name: userinfo.family_name.clone(),
                 first_name: userinfo.name.clone(),
                 email,
@@ -88,6 +83,7 @@ async fn login(
                 .map
                 .insert(id, (user, token, userinfo));
 
+            let redirect_url = state.clone().unwrap_or_else(|| host("/"));
             HttpResponse::Found()
                 .header(http::header::LOCATION, redirect_url)
                 .finish()
@@ -103,6 +99,18 @@ async fn login(
             HttpResponse::Unauthorized().finish()
         }
     }
+}
+
+#[get("/login/oauth2/code/oidc")]
+async fn login(
+    oidc_client: web::Data<DiscoveredClient>,
+    query: web::Query<LoginQuery>,
+    sessions: web::Data<RwLock<Sessions>>,
+    identity: Identity,
+) -> impl Responder {
+    eprintln!("login: {:?}", query);
+    let request_token = request_token(oidc_client, &query).await;
+    check_request_token(&query.state, sessions, identity, request_token).await
 }
 
 #[post("/logout")]
