@@ -6,8 +6,9 @@ use std::{env, sync::RwLock};
 
 use openid_example::{account, authorize, host, index, login, logout, Sessions};
 
-#[actix_rt::main]
+#[actix_web::main]
 async fn main() -> Result<(), ExitFailure> {
+    dotenv::dotenv().ok();
     let client_id = env::var("CLIENT_ID").unwrap_or("<client id>".to_string());
     let client_secret = env::var("CLIENT_SECRET").unwrap_or("<client secret>".to_string());
     let issuer_url = env::var("ISSUER").unwrap_or("https://accounts.google.com".to_string());

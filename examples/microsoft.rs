@@ -32,6 +32,7 @@ async fn microsoft_login(
 
 #[actix_rt::main]
 async fn main() -> Result<(), ExitFailure> {
+    dotenv::from_filename(".env.microsoft").ok();
     let client_id = env::var("CLIENT_ID").unwrap_or("<client id>".to_string());
     let client_secret = env::var("CLIENT_SECRET").unwrap_or("<client secret>".to_string());
     let issuer_url = env::var("ISSUER")
